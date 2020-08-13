@@ -1,127 +1,125 @@
 (function() {
-  
-let el = (element) => {
 
-  if(element.charAt(0) === "#"){
-    //jika merupakan sebuah id maka dia akan menampilkan single element;
-    return document.querySelector(element);
-  } else{
-    //jika bukan id maka dia akan mengembalikan nodelist
-    return document.querySelectorAll(element);
-  }
-
-};
-
-var display = el("#viewer"), //display kalkulator
-    equals = el("#equals"), //tombol sama dengan
-    nums = el(".num"), // list dari tombol angka dan decimal
-    ops = el(".ops"), // list dari tombol operator
-    numSekarang = "", // angka pada saat ini
-    numLama = "", // angka lama
-    numHasil, // angka hasil
-    operator; // operator
-
-// memilih no sekarang ketika no di klik
-
-var setNum = function(){
-  if(numHasil){
-    numSekarang = this.getAtrribute("data-num");
-    numHasil = "";
-  } else {
-    numSekarang += this.getAtrribute("data-num");
-
-  }
-  display.innerHTML = numSekarang;
-}
-
-//ketika operator di klik
-var pindahNum = function (){
-  numLama = numSekarang;
-  numSekarang = "";
-  operator = this.getAtrribute("data-ops");
-
-  equals.setAttribute("data-result", "");//kembalikan nilai atrribute dari equals
-
-}
-
-//ketika tombol sama dengan diklik
-let displayNum = function(){
-
-  //rubah string dari numLama dan numSekarang menjadi float
-  numLama = parseFloat(numLama);
-  numSekarang = parseFloat(numSekarang);
-
-  //menjalankan perhitungan
-  switch(operator){
-  case "plus":
-    numHasil = numLama + numSekarang;
-    break;
-
-  case "minus":
-    numHasil = numLama + numSekarang;
-    break;
-
-  case "times":
-    numHasil = numLama + numSekarang;
-    break;
-    
-  case "divided by":
-    numHasil = numLama + numSekarang;
-    break;
-  //jika tombol sama dengan di klik tanpa melakukan satupun operator yang ada maka tetapkan nilai numHasil dengan nilai numSekarang
-  default:
-    numHasil = numSekarang;
-    }
-  //pengecekan tombol selain angka
-
-  if(!isFinite(numHasil)){
-    if(isNaN(numHasil)){//jika nilai hasil bukan angka
-      numHasil = "Yah Rusak deh";
-    } else{
-      numHasil = "Nah ... ini nih :(";
-      el("#calculator").classList.add("broken");//efek animasi kalkulator rusak
-      el("#reset").classList.add("show"); // efek animasi untuk mereset kalkulator
+  // Shortcut to get elements
+  let el = (element) => {
+    if (element.charAt(0) === "#") { // If passed an ID...
+      return document.querySelector(element); // ... returns single element
     }
 
+      return document.querySelectorAll(element); // Otherwise, returns a nodelist
+  };
+
+  let display = el("#viewer"), // Calculator screen where result is displayed
+    equals = el("#equals"), // Equal button
+    angka = el(".num"), // List of numbers
+    ops = el(".ops"), // List of operators
+    angkaSaatIni = "", // Current number
+    angkaLama = "", // First number
+    hasil, // Result
+    operator; // Batman
+
+    // When: Number is clicked. Get the current number selected
+  let setNum = function() {
+    if (hasil) { // If a result was displayed, reset number
+      angkaSaatIni = this.getAttribute("data-num"); 
+      hasil = "";
+    } else { // Otherwise, add digit to previous number (this is a string!)
+      angkaSaatIni += this.getAttribute("data-num");
+    }
+
+    display.innerHTML = angkaSaatIni; // Display current number
+
+  };
+// When: Operator is clicked. Pass number to angkaLama and save operator
+  let pindahAngka = function() {
+    angkaLama = angkaSaatIni;//=="78 "plus" 8"
+    angkaSaatIni = "";
+    operator = this.getAttribute("data-ops");//"plus"
+
+    equals.setAttribute("data-result", ""); // Reset result in attr
+  };
+
+  // When: Equals is clicked. Calculate result
+  let displayNum = function() {
+
+    // Convert string input to numbers
+    angkaLama = parseFloat(angkaLama); //=78
+    angkaSaatIni = parseFloat(angkaSaatIni); //=8
+
+    // Perform operation
+    switch (operator) {
+      case "plus":
+        hasil = angkaLama + angkaSaatIni;
+        break;
+
+      case "minus":
+        hasil = angkaLama - angkaSaatIni;
+        break;
+
+      case "times":
+        hasil = angkaLama * angkaSaatIni;
+        break;
+
+      case "divided by":
+        hasil = angkaLama / angkaSaatIni;
+        break;
+
+        // If equal is pressed without an operator, keep number and continue
+      default:
+        hasil = angkaSaatIni;
+    }
+
+    // If NaN or Infinity returned
+    if (!isFinite(hasil)) {
+      if (isNaN(hasil)) { // If result is not a number; set off by, eg, double-clicking operators
+        hasil = "You broke it!";
+      } else { // If result is infinity, set off by dividing by zero
+        hasil = "Look at what you've done";
+        el('#calculator').classList.add("broken"); // Break calculator
+        el('#reset').classList.add("show"); // And show reset button
+      }
+    }
+
+    // Display result, finally!
+    display.innerHTML = hasil;//==86
+    equals.setAttribute("data-result", hasil);//==86
+
+    // Now reset angkaLama & keep result
+    angkaLama = 0;
+    angkaSaatIni = hasil;
+
+  };
+
+  // When: Clear button is pressed. Clear everything
+  let clearAll = function() {
+    angkaLama = "";
+    angkaSaatIni = "";
+    display.innerHTML = "0";
+    equals.setAttribute("data-result", angkaSaatIni);
+  };
+
+  /* The click events */
+
+  // Add click event to numbers
+  for (let i = 0; i < angka.length; i++) {
+    angka[i].onclick = setNum;
   }
 
-  //munculkan nilai
-  display.innerHTML = numHasil;
-  equals.setAttribute("data-result", numHasil);
-    
-}
+  // Add click event to operators
+  for (let i = 0, l = ops.length; i < l; i++) {
+    ops[i].onclick = pindahAngka;
+  }
 
-//ketika clear button di tekan
+  // Add click event to equal sign
+  equals.onclick = displayNum;
 
-let clear = function(){
-  numLama ="";
-  numSekarang = "";
-  display.innerHTML = "0";
-  equals.setAttribute("data-result", numSekarang);
-}
+  // Add click event to clear button
+  el("#clear").onclick = clearAll;
 
-//menambahkan klik even pada tombol
+  // Add click event to reset button
+  el("#reset").onclick = function() {
+    window.location = window.location;
+  };
 
-//klik event ke angka
-for (let i = 0; i< nums.length; i++){
-  nums[i].onclick = setNum;
-}
-
-//klik event untuk operator
-for (let i = 0; i< ops.length; i++){
-  ops[i].onclick = pindahNum;
-}
-
-//klik event untuk sama dengan
-
-equals.onclick = displayNum;
-
-//untuk clear
-el("#clear").onclick = clear;
-
-//untuk reset windows
-el("#reset").onclick = function() {
-  window.location = window.location;
-};
 
 }());
